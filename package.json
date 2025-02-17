@@ -1,0 +1,30 @@
+{
+  "name": "solver-rebalancer",
+  "version": "1.0.0",
+  "main": "index.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "scripts": {
+    "build": "tsc",
+    "start": "tsc && node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "lint": "eslint . --ext .ts",
+    "format": "prettier --write \"src/**/*.ts\""
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.4",
+    "eslint": "^9.20.1",
+    "prettier": "^3.5.1",
+    "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "@hyperlane-xyz/sdk": "^8.6.1",
+    "@reservoir0x/relay-sdk": "^1.6.1",
+    "axios": "^1.7.9",
+    "dotenv": "^16.4.7",
+    "tslib": "^2.8.1",
+    "viem": "^2.23.2"
+  }
+}
