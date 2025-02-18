@@ -38,7 +38,7 @@ async function rebalance(
           input.toTokenAddress
         }","amount": "${input.deficit.toString()}","tradeType":"EXACT_INPUT", "refundTo":"${account.address}"}`,
       };
-      console.log('options ', options);
+     
 
       const response = await fetch('https://api.relay.link/quote', options);
 

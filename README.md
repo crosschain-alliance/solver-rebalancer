@@ -23,6 +23,20 @@ Format
 npm run format
 ```
 
+# Docker
+
+Build
+
+```
+docker build -t solver-rebalancer .
+```
+
+Run
+
+```
+docker run solver-rebalancer
+```
+
 # Configuration
 
 Under `config/` folder:
