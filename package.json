@@ -15,6 +15,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.13.4",
+    "@types/pino": "^7.0.4",
     "eslint": "^9.20.1",
     "prettier": "^3.5.1",
     "typescript": "^5.7.3"
@@ -24,6 +25,8 @@
     "@reservoir0x/relay-sdk": "^1.6.1",
     "axios": "^1.7.9",
     "dotenv": "^16.4.7",
+    "pino": "^9.6.0",
+    "pino-pretty": "^13.0.0",
     "tslib": "^2.8.1",
     "viem": "^2.23.2"
   }

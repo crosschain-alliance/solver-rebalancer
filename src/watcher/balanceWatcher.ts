@@ -1,18 +1,8 @@
-import { inventoryConfig } from '../config/inventoryConfig';
-// create the wallet client for chain
-import {
-  createWalletClient,
-  http,
-  Chain,
-  publicActions,
-  Log,
-  erc20Abi,
-} from 'viem';
+import { erc20Abi } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
-import * as chains from 'viem/chains';
 import 'dotenv/config';
-import { getMultiClient } from './multiProvider';
 import { ChainBalance, TokenChainBalance } from '../interface/Token';
+import { inventoryConfig } from '../config/inventoryConfig';
 
 // Function to fetch multi-chain USDC balances
 export async function getMultiBalance(multiChainClient: any) {

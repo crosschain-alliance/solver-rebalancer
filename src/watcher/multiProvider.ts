@@ -1,11 +1,4 @@
-// create the wallet client for chain
-import {
-  createClient,
-  createWalletClient,
-  http,
-  publicActions,
-  Log,
-} from 'viem';
+import { createClient, createWalletClient, http, publicActions } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import * as chains from 'viem/chains';
 import 'dotenv/config';
@@ -44,7 +37,7 @@ export function getMultiClient() {
   let supportedChainIds: string[] = chainIDs
     .split(',')
     .map((item) => item.trim());
-  console.log('supported chain id ', supportedChainIds);
+
   const multiChainClient = supportedChainIds.map((chainId) => {
     const chain: Chain | undefined = Object.values(chains).find(
       ({ id }) => id.toString() === chainId

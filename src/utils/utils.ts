@@ -1,9 +1,9 @@
-// check if the balance of solver fall below balance
 import { inventoryConfig } from '../config/inventoryConfig';
 import { TokenChainBalance } from '../interface/Token';
 import { RebalanceOption } from '../interface/RebalanceOption';
 import warpRouteConfig from '../config/warpRoute';
 import { zeroAddress } from 'viem';
+import logger from '../logger';
 
 // Calculate the chain(s) that is below threshold
 export function getDeficitChains(
@@ -11,16 +11,12 @@ export function getDeficitChains(
 ): RebalanceOption[] {
   const rebalanceConfig: RebalanceOption[] = solverTokenBalance.USDC.map(
     ({ chainId, balance }) => {
-      console.log('Chain Id ', chainId);
       if (inventoryConfig.tokenConfig.USDC[chainId]) {
-        console.log('Checking threshold is below for chain id ', chainId);
         if (
           balance < BigInt(inventoryConfig.tokenConfig.USDC[chainId].threshold)
         ) {
-          console.log(
-            'Deficit found ',
-            BigInt(inventoryConfig.tokenConfig.USDC[chainId].threshold) -
-              balance
+          logger.info(
+            `Deficit found on ${chainId}, amount: ${BigInt(inventoryConfig.tokenConfig.USDC[chainId].threshold) - balance}`
           );
           return {
             fromTokenAddress: zeroAddress,
@@ -55,8 +51,6 @@ export function getRebalanceFromChain(solverTokenBalance: TokenChainBalance) {
     if (a.balance < b.balance) return 1;
     return 0;
   });
-
-  console.log('Sorted token balance ', solverTokenBalance);
 
   // simulate if the balance of the chain is still enough after deficit
   // the index 0 in solverTokenBalance has the highest balance, then check if balance - deficit of rebalanceConfig[0] has still > threshold from  inventoryConfig.tokenConfig.USDC[chainId].threshold
@@ -102,11 +96,11 @@ export function getRebalanceFromChain(solverTokenBalance: TokenChainBalance) {
       deficitOption.fromTokenAddress =
         inventoryConfig.tokenConfig.USDC[surplusChain.chainId].address;
 
-      console.log(
-        `Deficit covered from chain ${surplusChain.chainId} to chain ${deficitOption.toChainId}`
+      logger.info(
+        `Deficit should covered from chain ${surplusChain.chainId} to chain ${deficitOption.toChainId}`
       );
     } else {
-      console.log(
+      logger.info(
         `Cannot cover deficit for chain ${deficitOption.toChainId} from chain ${surplusChain.chainId}`
       );
       // If the surplus chain cannot cover the deficit, we might need to look for another chain or handle it differently

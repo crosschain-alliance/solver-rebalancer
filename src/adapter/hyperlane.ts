@@ -1,13 +1,8 @@
+import { parseAbiItem, PrivateKeyAccount, pad } from 'viem';
+import { privateKeyToAccount } from 'viem/accounts';
+import logger from '../logger';
 import warpRouteConfig from '../config/warpRoute';
 import { RebalanceOption } from '../interface/RebalanceOption';
-import {
-  type Chain,
-  parseAbi,
-  parseAbiItem,
-  PrivateKeyAccount,
-  pad,
-} from 'viem';
-import { privateKeyToAccount } from 'viem/accounts';
 
 export async function rebalanceThroughHyperlane(
   rebalanceInput: RebalanceOption[],
@@ -52,6 +47,7 @@ export async function rebalanceThroughHyperlane(
       const approveRequestTx = await sourceClient.writeContract({
         approveRequest,
       });
+      logger.info('Hyperlane: Approve tx ', approveRequestTx);
 
       // Example: https://www.tdly.co/shared/simulation/ba86c280-0029-4184-bd9c-84618c0ed8e5
       const { request: transferRemoteRequest } =
@@ -71,7 +67,9 @@ export async function rebalanceThroughHyperlane(
         transferRemoteRequest,
       });
 
-      console.log('TransferRemote tx ', transferRemoteTx);
+      logger.info('Hyperlane: TransferRemote tx ', transferRemoteTx);
+    } else {
+      logger.info('Hyperlane: Not in production mode, skipping rebalancing...');
     }
   });
 }
