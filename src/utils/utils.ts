@@ -61,8 +61,8 @@ export function getRebalanceFromChain(solverTokenBalance: TokenChainBalance) {
   // Iterate through each deficit chain and try to cover the deficit from the highest surplus chain
   for (let i = 0; i < rebalanceConfig.length; i++) {
     const deficitOption = rebalanceConfig[i];
-    let surplusChain = solverTokenBalance.USDC[0]; // Highest surplus chain
-
+    let surplusChain = solverTokenBalance.USDC[0].chainId == rebalanceConfig[i].toChainId ? solverTokenBalance.USDC[1] : solverTokenBalance.USDC[0]; // Highest surplus chain
+    
     if (deficitOption.bridgeOption == 'hyperlane') {
       const router = warpRouteConfig.USDC.routers.find(
         (router: any) => router.chainId === deficitOption.toChainId
@@ -88,6 +88,7 @@ export function getRebalanceFromChain(solverTokenBalance: TokenChainBalance) {
     const remainingBalance = surplusChain.balance - deficitOption.deficit;
 
     if (remainingBalance >= surplusThreshold) {
+      
       // Update the surplus chain's balance
       surplusChain.balance = remainingBalance;
 

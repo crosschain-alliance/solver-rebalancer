@@ -32,11 +32,8 @@ export async function getMultiBalance(multiChainClient: any) {
 
           return { chainId: chainIdStr, balance };
         } catch (error) {
-          console.error(
-            `Error fetching balance on chain ${chainIdStr}:`,
-            error
-          );
-          return { chainId: chainIdStr, balance: null, error };
+          throw new Error(
+            `Error fetching balance on chain ${chainIdStr}: ${error}`)
         }
       } else {
         console.log(`Chain ID ${chainIdStr} is not supported for ${process.env.TOKEN}.`);

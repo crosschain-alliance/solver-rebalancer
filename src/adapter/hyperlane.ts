@@ -84,6 +84,6 @@ export async function rebalanceThroughHyperlane(
       }
     });
   } catch (err) {
-    logger.error('Hyperlane: Error in Hyperlane rebalancing ', err);
+    throw new Error(`Hyperlane: Error in Hyperlane rebalancing  ${err}`);
   }
 }

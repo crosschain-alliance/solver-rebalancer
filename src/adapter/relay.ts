@@ -62,7 +62,7 @@ async function rebalance(
                 `Step: ${currentStep?.action}, TxHashes: ${txHashes}`
               );
             } catch (err: any) {
-              logger.error(`Progress callback error: ${err.message}`);
+              throw new Error (`Progress callback error: ${err.message}`);
             }
           },
         });
@@ -70,12 +70,12 @@ async function rebalance(
         logger.info('Relay: Not in production mode, skipping rebalancing...');
       }
     } catch (err) {
-      logger.error('Error in rebalance function:', err);
+      throw new Error(`Rebalance error in Relay ${err}`);
     }
   }
 }
 
-function setupRelay(account: PrivateKeyAccount, multiClient: any) {
+function setupRelay( multiClient: any) {
   const relayChains = multiClient
     .filter((client: any) => client !== undefined)
     .map((client: any) => {
@@ -84,7 +84,7 @@ function setupRelay(account: PrivateKeyAccount, multiClient: any) {
           convertRelayChainToViemChain(client.chain.name as string)
         );
       } catch (error) {
-        logger.error(`Skipping chain "${client.chain.name}": ${error}`);
+        logger.info(`Skipping chain "${client.chain.name}": ${error}`);
         return undefined;
       }
     })
@@ -106,9 +106,9 @@ export async function rebalanceThroughRelay(
   );
 
   try {
-    setupRelay(account, multiChainClient);
+    setupRelay(multiChainClient);
     await rebalance(rebalanceInput, multiChainClient, account);
   } catch (err) {
-    logger.error('Relay: Error in Relay rebalancing ', err);
+    throw new Error(`Relay: Error in Relay rebalancing  ${err}`);
   }
 }
