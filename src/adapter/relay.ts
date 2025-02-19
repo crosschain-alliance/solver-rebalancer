@@ -26,7 +26,7 @@ async function rebalance(
   viemtClients: any,
   account: PrivateKeyAccount
 ) {
-  rebalanceInput.forEach(async (input) => {
+  for (const input of rebalanceInput) {
     try {
       const options = {
         method: 'POST',
@@ -39,9 +39,6 @@ async function rebalance(
           input.toTokenAddress
         }","amount": "${input.deficit.toString()}","tradeType":"EXACT_INPUT", "refundTo":"${account.address}"}`,
       };
-
-      // TODO: Fix option incorrect JSON parse
-      // console.log("Relay: rebalancing configuration  " ,{options})
 
       const response = await fetch('https://api.relay.link/quote', options);
 
@@ -73,9 +70,9 @@ async function rebalance(
         logger.info('Relay: Not in production mode, skipping rebalancing...');
       }
     } catch (err) {
-      logger.error('Err ', err);
+      logger.error('Error in rebalance function:', err);
     }
-  });
+  }
 }
 
 function setupRelay(account: PrivateKeyAccount, multiClient: any) {
@@ -87,7 +84,7 @@ function setupRelay(account: PrivateKeyAccount, multiClient: any) {
           convertRelayChainToViemChain(client.chain.name as string)
         );
       } catch (error) {
-        // logger.info(`Skipping chain "${client.chain.name}": ${error}`);
+        logger.error(`Skipping chain "${client.chain.name}": ${error}`);
         return undefined;
       }
     })
@@ -107,7 +104,11 @@ export async function rebalanceThroughRelay(
   const account: PrivateKeyAccount = privateKeyToAccount(
     process.env.SOLVER_PRIVATE_KEY as `0x${string}`
   );
-  setupRelay(account, multiChainClient);
 
-  await rebalance(rebalanceInput, multiChainClient, account);
+  try {
+    setupRelay(account, multiChainClient);
+    await rebalance(rebalanceInput, multiChainClient, account);
+  } catch (err) {
+    logger.error('Relay: Error in Relay rebalancing ', err);
+  }
 }

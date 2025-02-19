@@ -3,6 +3,7 @@ import { privateKeyToAccount } from 'viem/accounts';
 import 'dotenv/config';
 import { ChainBalance, TokenChainBalance } from '../interface/Token';
 import { inventoryConfig } from '../config/inventoryConfig';
+import logger from '../logger';
 
 // Function to fetch multi-chain USDC balances
 export async function getMultiBalance(multiChainClient: any) {
@@ -17,15 +18,17 @@ export async function getMultiBalance(multiChainClient: any) {
       const chainIdStr = client.chain?.id.toString() || '1';
 
       // TODO: add dynamic token symbol check
-      if (inventoryConfig.tokenConfig.USDC[chainIdStr]) {
-        const usdcConfig = inventoryConfig.tokenConfig.USDC[chainIdStr];
+      if (inventoryConfig.tokenConfig[process.env.TOKEN || "USDC"][chainIdStr]) {
+        const tokenConfig = inventoryConfig.tokenConfig[process.env.TOKEN || "USDC"][chainIdStr];
         try {
           const balance = await client.readContract({
-            address: usdcConfig.address,
+            address: tokenConfig.address,
             abi: erc20Abi,
             functionName: 'balanceOf',
             args: [solverAddress],
           });
+
+          logger.info(`${process.env.TOKEN} balance on chainId ${chainIdStr} : ${balance} `)
 
           return { chainId: chainIdStr, balance };
         } catch (error) {
@@ -36,7 +39,7 @@ export async function getMultiBalance(multiChainClient: any) {
           return { chainId: chainIdStr, balance: null, error };
         }
       } else {
-        console.log(`Chain ID ${chainIdStr} is not supported for USDC.`);
+        console.log(`Chain ID ${chainIdStr} is not supported for ${process.env.TOKEN}.`);
         return { chainId: chainIdStr, balance: null };
       }
     })
@@ -45,6 +48,7 @@ export async function getMultiBalance(multiChainClient: any) {
   const solverTokenBalance: TokenChainBalance = {
     USDC: solverBalances,
   };
+
 
   return solverTokenBalance;
 }

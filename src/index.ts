@@ -7,10 +7,11 @@ import { getRebalanceFromChain } from './utils/utils';
 import { runRebalancer } from './rebalancer';
 
 const intervalMs = parseInt(process.env.WATCH_INTERVAL || '10000', 10);
-logger.info(`Polling interval: ${intervalMs / 1000}s...`);
+
 logger.info(
   `Staring rebalancer for solver ${privateKeyToAddress((process.env.SOLVER_PRIVATE_KEY as `0x${string}`) || '')}`
 );
+logger.info(`Polling interval: ${intervalMs / 1000}s...`);
 
 logger.info(`Supporting on chain: ${process.env.CHAIN_IDS}`);
 logger.info(`Supporting token: ${process.env.TOKEN}`);

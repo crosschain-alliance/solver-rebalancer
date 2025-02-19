@@ -14,62 +14,76 @@ export async function rebalanceThroughHyperlane(
   // if rebalanceOption is through hyperlane
 
   // check warpRoute config
-  rebalanceInput.forEach(async (route) => {
-    const sourceClient = multiChainClient.find(
-      (client: any) => client.chain.id.toString() === route.fromChainId
-    );
 
-    const gasFee = await sourceClient.readContract({
-      // address is warpRoute token, which is not route.fromAddress (this is the collateralToken)
-      address: warpRouteConfig.USDC.source.warpRouteToken,
-      abi: [
-        parseAbiItem(
-          'function quoteGasPayment(uint32 destinationDomain) external returns(uint256)'
-        ),
-      ],
-      functionName: 'quoteGasPayment',
-      args: [route.toChainId],
-    });
+  try {
+    rebalanceInput.forEach(async (route) => {
+      const sourceClient = multiChainClient.find(
+        (client: any) => client.chain.id.toString() === route.fromChainId
+      );
 
-    if (process.env.MODE == 'PROD') {
-      const { request: approveRequest } = await sourceClient.simulateContract({
-        address: warpRouteConfig.USDC.source.collateralToken,
+      const gasFee = await sourceClient.readContract({
+        // address is warpRoute token, which is not route.fromAddress (this is the collateralToken)
+        address: warpRouteConfig[process.env.TOKEN || "USDC"].source.warpRouteToken,
         abi: [
           parseAbiItem(
-            'function approve(address spender, uint256 value) external'
+            'function quoteGasPayment(uint32 destinationDomain) external returns(uint256)'
           ),
         ],
-        functionName: 'approve',
-        account,
-        args: [warpRouteConfig.USDC.source.warpRouteToken, route.deficit],
+        functionName: 'quoteGasPayment',
+        args: [route.toChainId],
       });
 
-      const approveRequestTx = await sourceClient.writeContract({
-        approveRequest,
-      });
-      logger.info('Hyperlane: Approve tx ', approveRequestTx);
+      if (process.env.MODE == 'PROD') {
+        const { request: approveRequest, result: approveResult } =
+          await sourceClient.simulateContract({
+            address: warpRouteConfig.USDC.source.collateralToken,
+            abi: [
+              parseAbiItem(
+                'function approve(address spender, uint256 value) external'
+              ),
+            ],
+            functionName: 'approve',
+            account,
+            args: [warpRouteConfig.USDC.source.warpRouteToken, route.deficit],
+          });
+        if (!approveResult) {
+          throw new Error('Hyperlane: approve token failed');
+        }
 
-      // Example: https://www.tdly.co/shared/simulation/ba86c280-0029-4184-bd9c-84618c0ed8e5
-      const { request: transferRemoteRequest } =
-        await sourceClient.simulateContract({
-          address: warpRouteConfig.USDC.source.warpRouteToken,
-          abi: [
-            parseAbiItem(
-              'function transferRemote(uint32 _destination,bytes32 _recipient,uint256 _amountOrId) external payable returns (bytes32 messageId)'
-            ),
-          ],
-          functionName: 'transferRemote',
-          account,
-          args: [route.toChainId, pad(account.address), route.deficit],
-          value: gasFee,
+        const approveRequestTx = await sourceClient.writeContract({
+          approveRequest,
         });
-      const transferRemoteTx = await sourceClient.writeContract({
-        transferRemoteRequest,
-      });
+        logger.info('Hyperlane: Approve tx ', approveRequestTx);
 
-      logger.info('Hyperlane: TransferRemote tx ', transferRemoteTx);
-    } else {
-      logger.info('Hyperlane: Not in production mode, skipping rebalancing...');
-    }
-  });
+        // Example: https://www.tdly.co/shared/simulation/ba86c280-0029-4184-bd9c-84618c0ed8e5
+        const { request: transferRemoteRequest, result: transferRemoteResult } =
+          await sourceClient.simulateContract({
+            address: warpRouteConfig.USDC.source.warpRouteToken,
+            abi: [
+              parseAbiItem(
+                'function transferRemote(uint32 _destination,bytes32 _recipient,uint256 _amountOrId) external payable returns (bytes32 messageId)'
+              ),
+            ],
+            functionName: 'transferRemote',
+            account,
+            args: [route.toChainId, pad(account.address), route.deficit],
+            value: gasFee,
+          });
+        if (!transferRemoteResult) {
+          throw new Error('Hyperlane: Transfer Remote failed');
+        }
+        const transferRemoteTx = await sourceClient.writeContract({
+          transferRemoteRequest,
+        });
+
+        logger.info('Hyperlane: TransferRemote tx ', transferRemoteTx);
+      } else {
+        logger.info(
+          'Hyperlane: Not in production mode, skipping rebalancing...'
+        );
+      }
+    });
+  } catch (err) {
+    logger.error('Hyperlane: Error in Hyperlane rebalancing ', err);
+  }
 }
