@@ -22,7 +22,7 @@ export function getDeficitChains(
             fromTokenAddress: zeroAddress,
             toTokenAddress: inventoryConfig.tokenConfig.USDC[chainId].address,
             deficit:
-              BigInt(inventoryConfig.tokenConfig.USDC[chainId].threshold) -
+              BigInt(process.env.MIN_BALANCE || '500000000') -
               balance,
             bridgeOption:
               inventoryConfig.tokenConfig.USDC[chainId].bridgeOption,
